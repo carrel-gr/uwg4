@@ -239,12 +239,12 @@ DEFAULT_MIN_TEMP = 5.0
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
-    t = UGW4()
+    t = UWG4()
     thermos = t.getThermoInfo()
     add_entities(thermos)
 
 
-class UGW4_Hvac(ClimateEntity):
+class UWG4_Hvac(ClimateEntity):
     def set_props(
         self, name, temp_act, temp_setpoint, heatingOn, regmode, online, sn, parent
     ):
