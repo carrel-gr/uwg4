@@ -282,7 +282,7 @@ class UGW4_Hvac(ClimateEntity):
         """
         if not self._isOnline:
             return HVAC_MODE_OFF
-        if self._regmode == UWG4.REGMODE_AUTO
+        if self._regmode == UWG4.REGMODE_AUTO:
             return HVAC_MODE_AUTO
         else:
             return HVAC_MODE_HEAT
