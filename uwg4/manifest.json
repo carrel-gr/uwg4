@@ -1,0 +1,17 @@
+{
+  "domain": "uwg4",
+  "name": "UWG4 Thermostat",
+  "config_flow": false,
+  "documentation": "https://www.home-assistant.io/integrations/uwg4",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "version": "0.0.1",
+  "dependencies": [
+    "climate"
+  ],
+  "codeowners": [
+    "@carrel"
+  ]
+}
