@@ -76,7 +76,7 @@ class UWG4(object):
         # For now, vacation is always not set.
         is_vacation = False
         vacation_begin = "01/01/1970 00:00:00"
-        vacation_end = "01/01/1970 00:00:00""
+        vacation_end = "01/01/1970 00:00:00"
         # calculate boost end time for 30 minutes
         # add two hours because smth is wrong with the time setting on the device
         # it substracts two hours. smth to do with the TZ, most likely.
