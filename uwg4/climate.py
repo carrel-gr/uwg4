@@ -214,11 +214,11 @@ from datetime import timedelta
 import functools as ft
 import logging
 from typing import Any, Dict, List, Optional
+from unit_conversion import TemperatureConverter
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.temperature import display_temp as show_temp
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType, ServiceDataType
-from homeassistant.util.temperature import convert as convert_temperature
 
 from homeassistant.const import TEMP_CELSIUS
 from homeassistant.components.climate.const import *
@@ -346,11 +346,11 @@ class UWG4_Hvac(ClimateEntity):
         preset = "AUTO"
         if self._regmode == UWG4.REGMODE_AUTO:
             preset = "AUTO"
-        elif self.regmode == UWG4.REGMODE_COMFORT:
+        elif self._regmode == UWG4.REGMODE_COMFORT:
             preset = "COMFORT"
-        elif self.regmode == UWG4.REGMODE_MANUAL:
+        elif self._regmode == UWG4.REGMODE_MANUAL:
             preset = "MANUAL"
-        elif self.regmode == UWG4.REGMODE_VACATION:
+        elif self._regmode == UWG4.REGMODE_VACATION:
             preset = "VACATION"
         return preset
 
@@ -391,16 +391,22 @@ class UWG4_Hvac(ClimateEntity):
     @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""
-        return convert_temperature(
-            DEFAULT_MIN_TEMP, TEMP_CELSIUS, self.temperature_unit
-        )
+        if self.temperature_unit == TEMP_FAHRENHEIT:
+            return TemperatureConverter.cToF(DEFAULT_MIN_TEMP)
+        elif self.temperature_unit == TEMP_KELVIN:
+            return TemperatureConverter.cToK(DEFAULT_MIN_TEMP)
+        # Default is Celcius
+        return DEFAULT_MIN_TEMP
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
-        return convert_temperature(
-            DEFAULT_MAX_TEMP, TEMP_CELSIUS, self.temperature_unit
-        )
+        if self.temperature_unit == TEMP_FAHRENHEIT:
+            return TemperatureConverter.cToF(DEFAULT_MAX_TEMP)
+        elif self.temperature_unit == TEMP_KELVIN:
+            return TemperatureConverter.cToK(DEFAULT_MAX_TEMP)
+        # Default is Celcius
+        return DEFAULT_MAX_TEMP
 
     def update(self):
         """Fetch new state data for the sensor.
