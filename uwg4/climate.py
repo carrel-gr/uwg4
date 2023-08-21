@@ -218,7 +218,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.temperature import display_temp as show_temp
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType, ServiceDataType
-from homeassistant.util.unit_conversion.TemperatureConverter import convert_internal as convert_temperature
+from homeassistant.util.unit_conversion import TemperatureConverter 
 
 from homeassistant.const import TEMP_CELSIUS
 from homeassistant.components.climate.const import *
@@ -391,14 +391,14 @@ class UWG4_Hvac(ClimateEntity):
     @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""
-        return convert_temperature(
+        return TemperatureConverter.convert(
             DEFAULT_MIN_TEMP, TEMP_CELSIUS, self.temperature_unit
         )
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
-        return convert_temperature(
+        return TemperatureConverter.convert(
             DEFAULT_MAX_TEMP, TEMP_CELSIUS, self.temperature_unit
         )
 
