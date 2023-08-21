@@ -214,11 +214,11 @@ from datetime import timedelta
 import functools as ft
 import logging
 from typing import Any, Dict, List, Optional
-from unit-conversion import TemperatureConverter
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_component import EntityComponent
 from homeassistant.helpers.temperature import display_temp as show_temp
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType, ServiceDataType
+from homeassistant.util.unit_conversion.TemperatureConverter import convert_internal as convert_temperature
 
 from homeassistant.const import TEMP_CELSIUS
 from homeassistant.components.climate.const import *
@@ -391,22 +391,16 @@ class UWG4_Hvac(ClimateEntity):
     @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""
-        if self.temperature_unit == TEMP_FAHRENHEIT:
-            return TemperatureConverter.cToF(DEFAULT_MIN_TEMP)
-        elif self.temperature_unit == TEMP_KELVIN:
-            return TemperatureConverter.cToK(DEFAULT_MIN_TEMP)
-        # Default is Celcius
-        return DEFAULT_MIN_TEMP
+        return convert_temperature(
+            DEFAULT_MIN_TEMP, TEMP_CELSIUS, self.temperature_unit
+        )
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
-        if self.temperature_unit == TEMP_FAHRENHEIT:
-            return TemperatureConverter.cToF(DEFAULT_MAX_TEMP)
-        elif self.temperature_unit == TEMP_KELVIN:
-            return TemperatureConverter.cToK(DEFAULT_MAX_TEMP)
-        # Default is Celcius
-        return DEFAULT_MAX_TEMP
+        return convert_temperature(
+            DEFAULT_MAX_TEMP, TEMP_CELSIUS, self.temperature_unit
+        )
 
     def update(self):
         """Fetch new state data for the sensor.
