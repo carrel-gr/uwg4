@@ -252,6 +252,12 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 
 class UWG4_Hvac(ClimateEntity):
+
+    PRESETMODE_AUTO = "AUTO"
+    PRESETMODE_COMFORT = "{} Minute Hold".format(COMFORT_TIME)
+    PRESETMODE_MANUAL = "Permanant Hold"
+    PRESETMODE_VACATION = "Vacation Hold"
+
     def set_props(
             self, name, temp_act, temp_setpoint, heatingOn, regmode,
             online, sn, parent
@@ -300,7 +306,7 @@ class UWG4_Hvac(ClimateEntity):
         """Return the list of available hvac operation modes.
         Need to be a subset of HVAC_MODES.
         """
-        return [HVAC_MODE_HEAT, HVAC_MODE_AUTO, HVAC_MODE_OFF]
+        return [HVAC_MODE_HEAT, HVAC_MODE_AUTO]
 
     @property
     def hvac_action(self) -> Optional[str]:
@@ -353,13 +359,13 @@ class UWG4_Hvac(ClimateEntity):
         """Return the current preset mode, e.g., home, away, temp.
         Requires SUPPORT_PRESET_MODE.
         """
-        preset = "AUTO"
+        preset = PRESETMODE_AUTO
         if self._regmode == UWG4.REGMODE_COMFORT:
-            preset = "COMFORT"
+            preset = PRESETMODE_COMFORT
         elif self._regmode == UWG4.REGMODE_MANUAL:
-            preset = "MANUAL"
+            preset = PRESETMODE_MANUAL
         elif self._regmode == UWG4.REGMODE_VACATION:
-            preset = "VACATION"
+            preset = PRESETMODE_VACATION
         return preset
 
     @property
@@ -370,10 +376,10 @@ class UWG4_Hvac(ClimateEntity):
         # this does not match the parent class because it can arrive
         # as input from the user
         PRESET_MODES = [
-            "AUTO",
-            "COMFORT",
-            "MANUAL",
-            # "VACATION",
+            PRESETMODE_AUTO,
+            PRESETMODE_COMFORT,
+            PRESETMODE_MANUAL,
+            # PRESETMODE_VACATION,
         ]
         return PRESET_MODES
 
@@ -381,13 +387,13 @@ class UWG4_Hvac(ClimateEntity):
         """Set new preset mode."""
         # self.preset_mode = preset_mode
         regmode = UWG4.REGMODE_AUTO
-        if preset_mode == "AUTO":
+        if preset_mode == PRESETMODE_AUTO:
             regmode = UWG4.REGMODE_AUTO
-        if preset_mode == "COMFORT":
+        if preset_mode == PRESETMODE_COMFORT:
             regmode = UWG4.REGMODE_COMFORT
-        if preset_mode == "MANUAL":
+        if preset_mode == PRESETMODE_MANUAL:
             regmode = UWG4.REGMODE_MANUAL
-        if preset_mode == "VACATION":
+        if preset_mode == PRESETMODE_VACATION:
             regmode = UWG4.REGMODE_VACATION
         self._parent.setThermoTemperature(
             self._thermoSN,
