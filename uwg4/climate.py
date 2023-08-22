@@ -10,6 +10,9 @@ HOST = "https://mythermostat.info:443"
 USER = "your_usernname"
 PASSWORD = "your_password"
 
+# Time that comfort setting should last (in minutes)
+COMFORT_TIME=90
+
 # Update frequency is secured to no spam the servers
 # and then get the account blacklisted.
 UPDATE_RATE_SEC = 1 * 60
@@ -71,38 +74,44 @@ class UWG4(object):
 
     def setThermoTemperature(self, thermo_sn, mode, temp):
 
-        # DAVE - need to calculate comfort end time.
-        comfort_end = "01/01/1970 00:00:00 +00:00"
-        # For now, vacation is always not set.
-        is_vacation = False
-        vacation_begin = "01/01/1970 00:00:00"
-        vacation_end = "01/01/1970 00:00:00"
-        # calculate boost end time for 30 minutes
-        # add two hours because smth is wrong with the time setting on the device
-        # it substracts two hours. smth to do with the TZ, most likely.
-        td = datetime.timedelta(minutes=BOOST_TIME)
-        d = datetime.datetime.today()
-        e = d + td
-        BoostEndTime = e.strftime("%Y-%m-%dT%H:%M:%S")
-
         path = "/api/thermostat"
         params = {"sessionid": self.sessionId, "serialnumber": thermo_sn}
-        # DAVE - can I get away with not setting "Schedules" in data???
-        data = {
-            "LastPrimaryModeIsAuto": True,
-            "RegulationMode": mode,
-            "ManualTemperature": temp,
-            "ComfortTemperature": temp,
-            "ComfortEndTime": comfort_end,
-            "VacationEnabled": is_vacation,
-            "VacationTemperature": temp,
-            "VacationBeginDay": vacation_begin,
-            "VacationEndDay": vacation_end,
-        }
+        if mode == uwg4.REGMODE_MANUAL:
+            data = {
+                "RegulationMode": mode,
+                "ManualTemperature": temp,
+            }
+        elif mode == uwg4.REGMODE_COMFORT:
+            td = datetime.timedelta(minutes=COMFORT_TIME)
+            d = datetime.datetime.utcnow()
+            e = d + td
+            comfort_end = e.strftime("%d/%m/%Y %H:%M:00 +00:00")
+            data = {
+                "RegulationMode": mode,
+                "ComfortTemperature": temp,
+                "ComfortEndTime": comfort_end,
+            }
+        elif mode == self.REGMODE_VACATION:
+            # For now, vacation is not implemented.
+            is_vacation = False
+            vacation_begin = "01/01/1970 00:00:00"
+            vacation_end = "01/01/1970 00:00:00"
+            data = {
+                "RegulationMode": mode,
+                "VacationEnabled": is_vacation,
+                "VacationTemperature": temp,
+                "VacationBeginDay": vacation_begin,
+                "VacationEndDay": vacation_end,
+            }
+        else:
+            # For everything else (including AUTO), just set AUTO.
+            data = {
+                "RegulationMode": uwg4.REGMODE_AUTO,
+            }
 
         r = requests.post(HOST + path, json=data, params=params)
         res = r.json()
-        if res["Succeess"] != True:
+        if res["Success"] != True:
             self.login()
             r = requests.post(HOST + path, json=data, params=params)
             res = r.json()
@@ -181,9 +190,7 @@ class UWG4(object):
                 setpointTemp = setpointTemp / 100
                 heatingOn = thermo["Heating"]
                 name = thermo["Room"]
-
                 online = thermo["Online"]
-
                 sn = thermo["SerialNumber"]
 
                 therm = None
@@ -246,7 +253,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 class UWG4_Hvac(ClimateEntity):
     def set_props(
-        self, name, temp_act, temp_setpoint, heatingOn, regmode, online, sn, parent
+            self, name, temp_act, temp_setpoint, heatingOn, regmode,
+            online, sn, parent
     ):
         self._name = name
         self._temp_act = temp_act
@@ -324,19 +332,21 @@ class UWG4_Hvac(ClimateEntity):
         # for key, value in kwargs.items():
         #     print("{0} = {1}".format(key, value))
         temp = float(kwargs["temperature"])
+        if self._regmode == UWG4.REGMODE_AUTO:
+            regmode = UWG4.REGMMODE_COMFORT
+        else:
+            regmode = self._regmode
         self._parent.setThermoTemperature(
             self._thermoSN,
-            UWG4.REGMODE_MANUAL,
+            regmode,
             int(temp * 100),
         )
         self._temp_setpoint = temp
-        print(f"Setting temperature: {int(temp * 100)}")
+        # print(f"Setting temperature: {int(temp * 100)}")
 
     def set_hvac_mode(self, hvac_mode: str) -> None:
         """Set new target hvac mode."""
-        # DAVE - need to add this
-        # https://developers.home-assistant.io/docs/core/entity/climate/
-        # call self._parent.setThermoTemperature()
+        # No function to turn OFF/ON/IDLE
 
     @property
     def preset_mode(self) -> Optional[str]:
@@ -344,9 +354,7 @@ class UWG4_Hvac(ClimateEntity):
         Requires SUPPORT_PRESET_MODE.
         """
         preset = "AUTO"
-        if self._regmode == UWG4.REGMODE_AUTO:
-            preset = "AUTO"
-        elif self._regmode == UWG4.REGMODE_COMFORT:
+        if self._regmode == UWG4.REGMODE_COMFORT:
             preset = "COMFORT"
         elif self._regmode == UWG4.REGMODE_MANUAL:
             preset = "MANUAL"
@@ -363,7 +371,7 @@ class UWG4_Hvac(ClimateEntity):
         # as input from the user
         PRESET_MODES = [
             "AUTO",
-            # "COMFORT",
+            "COMFORT",
             "MANUAL",
             # "VACATION",
         ]
@@ -381,12 +389,12 @@ class UWG4_Hvac(ClimateEntity):
             regmode = UWG4.REGMODE_MANUAL
         if preset_mode == "VACATION":
             regmode = UWG4.REGMODE_VACATION
-        self._regmode = regmode
         self._parent.setThermoTemperature(
             self._thermoSN,
             regmode,
             int(self._temp_setpoint * 100),
         )
+        self._regmode = regmode
 
     @property
     def min_temp(self) -> float:

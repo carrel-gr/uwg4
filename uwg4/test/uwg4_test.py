@@ -14,6 +14,9 @@ HOST = "https://mythermostat.info:443"
 USER = "dc-micronline@sailpix.com"
 PASSWORD = "o$3bpmvhpxLNWg#V"
 
+# Time that comfort setting should last (in minutes)
+COMFORT_TIME=2
+
 # Update frequency is secured to no spam the servers
 # and then get the account blacklisted.
 UPDATE_RATE_SEC = 1 * 60
@@ -22,14 +25,14 @@ UPDATE_RATE_SEC = 1 * 60
 class UWG4(object):
 
     REGMODE_AUTO = 1
-    REGMODE_CONFORT = 2
+    REGMODE_COMFORT = 2
     REGMODE_MANUAL = 3
     REGMODE_VACATION = 4
 
     REGMODETXT = [
         "ERROR",
         "AUTO",
-        "CONFORT",
+        "COMFORT",
         "MANUAL",
         "VACATION",
     ]
@@ -74,41 +77,58 @@ class UWG4(object):
         else:
             self.logerr("Failed to execute login request")
 
-    def setThermoTemperature(self, thermo_id, thermo_sn, mode, name, temp):
+    def setThermoTemperature(self, thermo_sn, mode, temp):
 
-        path = "/api/Thermostat/UpdateThermostat"
-        params = {"sessionid": self.sessionId}
-        data = {
-            "APIKEY": APIKEY,
-            "ThermostatID": thermo_id,
-            "SetThermostat": {
-                "AdaptiveMode": True,
-                "CustomerId": 99,
-                "DaylightSaving": True,
-                "DaylightSavingActive": False,
-                "Id": int(thermo_id),
-                "MaxSetpoint": 2500,
-                "MinSetpoint": 500,
-                "OpenWindow": True,
-                "SensorAppl": 4,
-                "SerialNumber": thermo_sn,
-                "TimeZone": 7200,
-                "ThermostatName": name,
-                "Action": 0,
-                "ManualModeSetpoint": temp,
+        path = "/api/thermostat"
+        params = {"sessionid": self.sessionId, "serialnumber": thermo_sn}
+        if mode == self.REGMODE_AUTO:
+            data = {
                 "RegulationMode": mode,
-                "BoostEndTime": BoostEndTime,
-            },
-        }
+            }
+        elif mode == self.REGMODE_MANUAL:
+            data = {
+                "RegulationMode": mode,
+                "ManualTemperature": temp,
+            }
+        elif mode == self.REGMODE_COMFORT:
+            td = datetime.timedelta(minutes=COMFORT_TIME)
+            d = datetime.datetime.utcnow()
+            e = d + td
+            comfort_end = e.strftime("%d/%m/%Y %H:%M:00 +00:00")
+            print(f"{comfort_end} - {temp}")
+            data = {
+                "RegulationMode": mode,
+                "ComfortTemperature": temp,
+                "ComfortEndTime": comfort_end,
+            }
+        elif mode == self.REGMODE_VACATION:
+            # For now, vacation is not implemented.
+            is_vacation = False
+            vacation_begin = "01/01/1970 00:00:00"
+            vacation_end = "01/01/1970 00:00:00"
+            data = {
+                "RegulationMode": mode,
+                "ManualTemperature": temp,
+                "VacationEnabled": is_vacation,
+                "VacationTemperature": temp,
+                "VacationBeginDay": vacation_begin,
+                "VacationEndDay": vacation_end,
+            }
+        else:
+            print("Bad mode.")
+            return
 
         r = requests.post(HOST + path, json=data, params=params)
         res = r.json()
-        if res["ErrorCode"] != 0:
+        if res["Success"] != True:
             self.login()
             r = requests.post(HOST + path, json=data, params=params)
             res = r.json()
-            if res["ErrorCode"] != 0:
+            if res["Success"] != True:
                 self.logerr("Operation failed")
+                print("Failed.")
+                return
+        print("Success.")
         self.allow_next_update()
 
     def update_allowed(self):
@@ -200,13 +220,8 @@ class UWG4(object):
                 actualTemp = thermo["Temperature"]
                 actualTemp = actualTemp / 100
                 if regmode == self.REGMODE_AUTO:
-                    # This will give the temp from the thermo schedule
-                    # print(thermo["Room"])
-                    #DAVE - ???
-                    #setpointTemp = self.getScheduleSetpoint(thermo["Schedule"])
                     setpointTemp = thermo["SetPointTemp"]
-                    # print(f"Decided {setpointTemp}")
-                elif regmode == self.REGMODE_CONFORT:
+                elif regmode == self.REGMODE_COMFORT:
                     setpointTemp = thermo["ComfortTemperature"]
                 elif regmode == self.REGMODE_MANUAL:
                     setpointTemp = thermo["ManualTemperature"]
@@ -232,9 +247,10 @@ class UWG4(object):
                 sn = thermo["SerialNumber"]
                 actualTemp = round((1.8*actualTemp)+32, 2)
                 setpointTemp = round((1.8*setpointTemp)+32, 2)
-                confortTemp = thermo["ComfortTemperature"]
-                confortTemp = confortTemp / 100
-                confortTemp = round((1.8*confortTemp)+32, 2)
+                comfortTemp = thermo["ComfortTemperature"]
+                comfortTemp = comfortTemp / 100
+                comfortTemp = round((1.8*comfortTemp)+32, 2)
+                comEnd = thermo["ComfortEndTime"]
                 manTemp = thermo["ManualTemperature"]
                 manTemp = manTemp / 100
                 manTemp = round((1.8*manTemp)+32, 2)
@@ -242,9 +258,13 @@ class UWG4(object):
                 vacTemp = vacTemp / 100
                 vacTemp = round((1.8*vacTemp)+32, 2)
                 print(f"   {name:<20}/{sn:<8} : {heatStatus:<12} : {actualTemp:<4}/{setpointTemp:<4} : {self.REGMODETXT[regmode]} : {isOnline}")
-                print(f"                  set={setpointTemp}  comfort={confortTemp}  manual={manTemp}  vacation={vacTemp}")
+                print(f"                  set={setpointTemp}  comfort={comfortTemp}  manual={manTemp}  vacation={vacTemp}")
+                print(f"                  comEnd={comEnd}")
 
 
 if __name__ == "__main__":
    uwg4 = UWG4()
+   uwg4.getThermoInfo()
+   uwg4.setThermoTemperature(1281255, uwg4.REGMODE_COMFORT, 17 * 100)
+   uwg4.getData()
    uwg4.getThermoInfo()
