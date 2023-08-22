@@ -76,12 +76,12 @@ class UWG4(object):
 
         path = "/api/thermostat"
         params = {"sessionid": self.sessionId, "serialnumber": thermo_sn}
-        if mode == uwg4.REGMODE_MANUAL:
+        if mode == self.REGMODE_MANUAL:
             data = {
                 "RegulationMode": mode,
                 "ManualTemperature": temp,
             }
-        elif mode == uwg4.REGMODE_COMFORT:
+        elif mode == self.REGMODE_COMFORT:
             td = datetime.timedelta(minutes=COMFORT_TIME)
             d = datetime.datetime.utcnow()
             e = d + td
@@ -106,7 +106,7 @@ class UWG4(object):
         else:
             # For everything else (including AUTO), just set AUTO.
             data = {
-                "RegulationMode": uwg4.REGMODE_AUTO,
+                "RegulationMode": self.REGMODE_AUTO,
             }
 
         r = requests.post(HOST + path, json=data, params=params)
@@ -333,7 +333,7 @@ class UWG4_Hvac(ClimateEntity):
         #     print("{0} = {1}".format(key, value))
         temp = float(kwargs["temperature"])
         if self._regmode == UWG4.REGMODE_AUTO:
-            regmode = UWG4.REGMMODE_COMFORT
+            regmode = UWG4.REGMODE_COMFORT
         else:
             regmode = self._regmode
         self._parent.setThermoTemperature(
