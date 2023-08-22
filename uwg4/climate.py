@@ -359,13 +359,13 @@ class UWG4_Hvac(ClimateEntity):
         """Return the current preset mode, e.g., home, away, temp.
         Requires SUPPORT_PRESET_MODE.
         """
-        preset = PRESETMODE_AUTO
+        preset = self.PRESETMODE_AUTO
         if self._regmode == UWG4.REGMODE_COMFORT:
-            preset = PRESETMODE_COMFORT
+            preset = self.PRESETMODE_COMFORT
         elif self._regmode == UWG4.REGMODE_MANUAL:
-            preset = PRESETMODE_MANUAL
+            preset = self.PRESETMODE_MANUAL
         elif self._regmode == UWG4.REGMODE_VACATION:
-            preset = PRESETMODE_VACATION
+            preset = self.PRESETMODE_VACATION
         return preset
 
     @property
@@ -376,10 +376,10 @@ class UWG4_Hvac(ClimateEntity):
         # this does not match the parent class because it can arrive
         # as input from the user
         PRESET_MODES = [
-            PRESETMODE_AUTO,
-            PRESETMODE_COMFORT,
-            PRESETMODE_MANUAL,
-            # PRESETMODE_VACATION,
+            self.PRESETMODE_AUTO,
+            self.PRESETMODE_COMFORT,
+            self.PRESETMODE_MANUAL,
+            # self.PRESETMODE_VACATION,
         ]
         return PRESET_MODES
 
@@ -387,13 +387,13 @@ class UWG4_Hvac(ClimateEntity):
         """Set new preset mode."""
         # self.preset_mode = preset_mode
         regmode = UWG4.REGMODE_AUTO
-        if preset_mode == PRESETMODE_AUTO:
+        if preset_mode == self.PRESETMODE_AUTO:
             regmode = UWG4.REGMODE_AUTO
-        if preset_mode == PRESETMODE_COMFORT:
+        if preset_mode == self.PRESETMODE_COMFORT:
             regmode = UWG4.REGMODE_COMFORT
-        if preset_mode == PRESETMODE_MANUAL:
+        if preset_mode == self.PRESETMODE_MANUAL:
             regmode = UWG4.REGMODE_MANUAL
-        if preset_mode == PRESETMODE_VACATION:
+        if preset_mode == self.PRESETMODE_VACATION:
             regmode = UWG4.REGMODE_VACATION
         self._parent.setThermoTemperature(
             self._thermoSN,
