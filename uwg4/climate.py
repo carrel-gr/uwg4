@@ -270,6 +270,7 @@ class UWG4_Hvac(ClimateEntity):
         self._regmode = regmode
         self._parent = parent
         self._thermoSN = sn
+        self.unique_id = sn
 
     @property
     def supported_features(self) -> int:
