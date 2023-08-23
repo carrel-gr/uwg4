@@ -11,8 +11,8 @@ import json
 
 
 HOST = "https://mythermostat.info:443"
-USER = "dc-micronline@sailpix.com"
-PASSWORD = "o$3bpmvhpxLNWg#V"
+USER = "your_username"
+PASSWORD = "your_password"
 
 # Time that comfort setting should last (in minutes)
 COMFORT_TIME=2
