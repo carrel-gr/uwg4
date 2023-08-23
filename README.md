@@ -19,10 +19,11 @@ Features:
 
 # How to use
 - Copy the uwg4 folder to your home assistant `custom_components` folder
-  - example: /opt/home-assistant/custom_components/uwg4
+  - example: /config/custom_components/uwg4
 - Edit `climate.py` and set your username/password
    - I use the same user/pass in the OJ Microline UWG4 app by OJ Electronics
-   - https://play.google.com/store/apps/details?id=com.ojelectronics.microline
+     - https://play.google.com/store/apps/details?id=com.ojelectronics.microline
+   - edit COMFORT_TIME to change the 90 minute preset to a new duration
    
 - Add the following in your `configuration.yaml` file:
 ```yaml
