@@ -270,7 +270,6 @@ class UWG4_Hvac(ClimateEntity):
         self._regmode = regmode
         self._parent = parent
         self._thermoSN = sn
-        self.unique_id = sn
 
     @property
     def supported_features(self) -> int:
@@ -281,6 +280,11 @@ class UWG4_Hvac(ClimateEntity):
     def name(self):
         """Return the name of the sensor."""
         return self._name
+
+    @property
+    def unique_id(self):
+        """Return the unique id."""
+        return self._thermoSN
 
     @property
     def temperature_unit(self) -> str:
