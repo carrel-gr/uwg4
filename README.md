@@ -31,6 +31,7 @@ climate:
    platform: uwg4
    # scan_interval default is 30 (internal code protects against server bashing)
    scan_interval: 20
+'''
 
 # Credit
 - I used https://github.com/radubacaran/mwd5 as the initial basis for this.
