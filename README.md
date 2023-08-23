@@ -3,7 +3,7 @@ UWG4 / AWG4 Microline thermostat custom component for Home Assistant
 
 Features:
 - Auto detection of thermostats associated with your account
-- Supports Permanant/90 Minute/Auto settings (as presets)
+- Supports Permanent/90 Minute/Auto settings (as presets)
   - "Permanent" sets the temp and it stays until you change it.
   - "90 Minutes" sets the temp for 90 minutes (see below to change this duration)
   - "Auto" returns you to your pre-programmed schedules

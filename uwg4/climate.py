@@ -255,7 +255,7 @@ class UWG4_Hvac(ClimateEntity):
 
     PRESETMODE_AUTO = "AUTO"
     PRESETMODE_COMFORT = "{} Minute Hold".format(COMFORT_TIME)
-    PRESETMODE_MANUAL = "Permanant Hold"
+    PRESETMODE_MANUAL = "Permanent Hold"
     PRESETMODE_VACATION = "Vacation Hold"
 
     def set_props(
