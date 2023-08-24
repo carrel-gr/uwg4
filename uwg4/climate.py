@@ -253,7 +253,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 class UWG4_Hvac(ClimateEntity):
 
-    PRESETMODE_AUTO = "AUTO"
+    PRESETMODE_AUTO = "Run Schedule"
     PRESETMODE_COMFORT = "{} Minute Hold".format(COMFORT_TIME)
     PRESETMODE_MANUAL = "Permanent Hold"
     PRESETMODE_VACATION = "Vacation Hold"
