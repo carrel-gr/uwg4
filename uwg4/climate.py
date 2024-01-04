@@ -227,17 +227,15 @@ from homeassistant.helpers.temperature import display_temp as show_temp
 from homeassistant.helpers.typing import ConfigType, HomeAssistantType, ServiceDataType
 from homeassistant.util.unit_conversion import TemperatureConverter 
 
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 from homeassistant.components.climate.const import *
-from homeassistant.components.climate.const import (
-    HVAC_MODE_OFF,
-    HVAC_MODE_HEAT,
-    HVAC_MODE_AUTO,
-    CURRENT_HVAC_OFF,
-    CURRENT_HVAC_HEAT,
-    CURRENT_HVAC_IDLE,
+
+from homeassistant.components.climate import (
+    ClimateEntity,
+    ClimateEntityFeature,
+    HVACAction,
+    HVACMode,
 )
-from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
 
 
 DEFAULT_MAX_TEMP = 25.0
@@ -274,7 +272,7 @@ class UWG4_Hvac(ClimateEntity):
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE | SUPPORT_PRESET_MODE
+        return ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
 
     @property
     def name(self):
@@ -289,44 +287,44 @@ class UWG4_Hvac(ClimateEntity):
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement used by the platform."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def hvac_mode(self) -> str:
         """Return hvac operation ie. heat, cool mode.
-        Need to be one of HVAC_MODE_*.
-        HVAC_MODE_OFF	The device is turned off.
-        HVAC_MODE_HEAT	The device is set to heat to a target temperature.
-        HVAC_MODE_AUTO	The device is set to a schedule, learned behavior, AI.
+        Need to be one of HVACMode.*
+        HVACMode.OFF	The device is turned off.
+        HVACMode.HEAT	The device is set to heat to a target temperature.
+        HVACMode.AUTO	The device is set to a schedule, learned behavior, AI.
         """
         if not self._isOnline:
-            return HVAC_MODE_OFF
+            return HVACMode.OFF
         if self._regmode == UWG4.REGMODE_AUTO:
-            return HVAC_MODE_AUTO
+            return HVACMode.AUTO
         else:
-            return HVAC_MODE_HEAT
+            return HVACMode.HEAT
 
     @property
     def hvac_modes(self) -> List[str]:
         """Return the list of available hvac operation modes.
-        Need to be a subset of HVAC_MODES.
+        Need to be a subset of HVACMode.*
         """
-        return [HVAC_MODE_HEAT, HVAC_MODE_AUTO]
+        return [HVACMode.HEAT, HVACMode.AUTO]
 
     @property
     def hvac_action(self) -> Optional[str]:
         """Return the current running hvac operation if supported.
-        Need to be one of CURRENT_HVAC_*.
-        CURRENT_HVAC_OFF	Device is turned off.
-        CURRENT_HVAC_HEAT	Device is heating.
-        CURRENT_HVAC_IDLE	Device is idle.
+        Need to be one of HVACAction.*.
+        HVACAction.OFF		Device is turned off.
+        HVACAction.HEATING	Device is heating.
+        HVACAction.IDLE		Device is idle.
         """
         if not self._isOnline:
-            return CURRENT_HVAC_OFF
+            return HVACAction.OFF
         if self._isHeating:
-            return CURRENT_HVAC_HEAT
+            return HVACAction.HEATING
         else:
-            return CURRENT_HVAC_IDLE
+            return HVACAction.IDLE
 
     @property
     def current_temperature(self) -> Optional[float]:
@@ -411,14 +409,14 @@ class UWG4_Hvac(ClimateEntity):
     def min_temp(self) -> float:
         """Return the minimum temperature."""
         return TemperatureConverter.convert(
-            DEFAULT_MIN_TEMP, TEMP_CELSIUS, self.temperature_unit
+            DEFAULT_MIN_TEMP, UnitOfTemperature.CELSIUS, self.temperature_unit
         )
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
         return TemperatureConverter.convert(
-            DEFAULT_MAX_TEMP, TEMP_CELSIUS, self.temperature_unit
+            DEFAULT_MAX_TEMP, UnitOfTemperature.CELSIUS, self.temperature_unit
         )
 
     def update(self):
