@@ -228,7 +228,6 @@ from homeassistant.helpers.typing import ConfigType, HomeAssistantType, ServiceD
 from homeassistant.util.unit_conversion import TemperatureConverter 
 
 from homeassistant.const import UnitOfTemperature
-from homeassistant.components.climate.const import *
 
 from homeassistant.components.climate import (
     ClimateEntity,
