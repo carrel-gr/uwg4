@@ -221,10 +221,6 @@ from datetime import timedelta
 import functools as ft
 import logging
 from typing import Any, Dict, List, Optional
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.entity_component import EntityComponent
-from homeassistant.helpers.temperature import display_temp as show_temp
-from homeassistant.helpers.typing import ConfigType, HomeAssistantType, ServiceDataType
 from homeassistant.util.unit_conversion import TemperatureConverter 
 
 from homeassistant.const import UnitOfTemperature
